@@ -19,17 +19,25 @@ enum cell_type {
 
 enum bonus_type {
 	BONUS_BOMB_RANGE_DEC=1,
-	BONUS_BOMB_RANGE_INC,
-	BONUS_BOMB_NB_DEC,
-	BONUS_BOMB_NB_INC,
-	BONUS_MONSTER,
-	BONUS_LIFE
+	BONUS_BOMB_RANGE_INC=2,
+	BONUS_BOMB_NB_DEC=3,
+	BONUS_BOMB_NB_INC=4,
+	BONUS_MONSTER=5,
+	BONUS_LIFE=6
+};
+
+enum bomb_time{
+	BOMB_4=0,
+	BOMB_3=1,
+	BOMB_2=2,
+	BOMB_1=3,
+	BOMB_BOOM=4,
 };
 
 enum scenery_type {
-	SCENERY_STONE,     // 0000 
-	SCENERY_TREE,      // 0010 
-	SCENERY_PRINCESS   // 0010 
+	SCENERY_STONE=0,     // 0000
+	SCENERY_TREE=1,      // 0010
+	SCENERY_PRINCESS=2   // 0010
 };
 
 enum compose_type {
@@ -37,18 +45,25 @@ enum compose_type {
 	CELL_STONE    = CELL_SCENERY | SCENERY_STONE,
 	CELL_PRINCESS = CELL_SCENERY | SCENERY_PRINCESS,
 
-    CELL_BOX_RANGEINC = CELL_BOX | BONUS_BOMB_RANGE_DEC,
-    CELL_BOX_RANGEDEC = CELL_BOX | BONUS_BOMB_RANGE_INC,
+  CELL_BOX_RANGEINC = CELL_BOX | BONUS_BOMB_RANGE_DEC,
+  CELL_BOX_RANGEDEC = CELL_BOX | BONUS_BOMB_RANGE_INC,
 	CELL_BOX_BOMBINC  = CELL_BOX | BONUS_BOMB_NB_DEC,
-    CELL_BOX_BOMBDEC  = CELL_BOX | BONUS_BOMB_NB_INC,
-    CELL_BOX_LIFE     = CELL_BOX | BONUS_MONSTER,
-    CELL_BOX_MONSTER  = CELL_BOX | BONUS_LIFE,
+  CELL_BOX_BOMBDEC  = CELL_BOX | BONUS_BOMB_NB_INC,
+  CELL_BOX_LIFE     = CELL_BOX | BONUS_MONSTER,
+  CELL_BOX_MONSTER  = CELL_BOX | BONUS_LIFE,
+
+	CELL_BOMB_4 = CELL_BOMB | BOMB_4,
+	CELL_BOMB_3 = CELL_BOMB | BOMB_3,
+	CELL_BOMB_2 = CELL_BOMB | BOMB_2,
+	CELL_BOMB_1 = CELL_BOMB | BOMB_1,
+	CELL_BOOM   = CELL_BOMB | BOMB_BOOM,
 };
 
 struct map;
 
 // Create a new empty map
 struct map* map_new(int width, int height);
+
 void map_free(struct map* map);
 
 
@@ -59,6 +74,7 @@ int map_get_height(struct map* map);
 // Return the type of a cell
 enum cell_type map_get_cell_type(struct map* map, int x, int y);
 
+
 // Set the type of a cell
 void  map_set_cell_type(struct map* map, int x, int y, enum cell_type type);
 
@@ -67,6 +83,9 @@ int map_is_inside(struct map* map, int x, int y);
 
 // Return a default static map
 struct map* map_get_static();
+
+//Display bombs on the screen
+void display_bombs(struct map* map, int x, int  y, unsigned char type);
 
 // Display the map on the screen
 void map_display(struct map* map);

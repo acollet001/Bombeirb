@@ -39,6 +39,7 @@
 #define BOMB_TTL2       "sprite/bomb2.png"
 #define BOMB_TTL3       "sprite/bomb3.png"
 #define BOMB_TTL4       "sprite/bomb4.png"
+#define BOOM            "sprite/explosion.png"
 
 // Sprites of Bonus
 #define IMG_BONUS_BOMB_RANGE_INC  "sprite/bonus_bomb_range_inc.png"
@@ -74,6 +75,9 @@ SDL_Surface* bonus[NB_BONUS + 1];
 
 // player
 SDL_Surface* player_img[4];
+
+//bombs
+SDL_Surface* bombs[5];
 
 static void banner_load() {
 	// numbers imgs
@@ -154,11 +158,27 @@ static void player_unload() {
 		SDL_FreeSurface(player_img[i]);
 }
 
+//bombs
+static void bomb_load(){
+	bombs[0] = load_image(BOMB_TTL4);
+	bombs[1] = load_image(BOMB_TTL3);
+	bombs[2] = load_image(BOMB_TTL2);
+	bombs[3] = load_image(BOMB_TTL1);
+	bombs[4] = load_image(BOOM);
+}
+
+static void bomb_unload(){
+	for (int i = 0; i < 5; i++)
+		if(bombs[i])
+			SDL_FreeSurface(bombs[i]);
+}
+
 void sprite_load() {
 	map_load();
 	bonus_load();
 	banner_load();
 	player_load();
+	bomb_load();
 }
 
 void sprite_free() {
@@ -166,6 +186,7 @@ void sprite_free() {
 	bonus_unload();
 	banner_unload();
 	player_unload();
+	bomb_unload();
 }
 
 SDL_Surface* sprite_get_number(short number) {
@@ -176,6 +197,11 @@ SDL_Surface* sprite_get_number(short number) {
 SDL_Surface* sprite_get_player(enum direction direction) {
 	assert(player_img[direction]);
 	return player_img[direction];
+}
+
+SDL_Surface* sprite_get_bombs(enum bomb_time bomb_time) {
+	assert(bombs[bomb_time]);
+	return bombs[bomb_time];
 }
 
 SDL_Surface* sprite_get_banner_life() {

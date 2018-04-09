@@ -23,9 +23,10 @@
 
 enum direction {
 	NORTH = 0,
-	SOUTH, // 1
-	WEST, // 2
-	EAST //3
+	SOUTH=1, // 1
+	WEST=2, // 2
+	EAST=3, //3
 };
+
 
 #endif /* CONSTANT */

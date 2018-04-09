@@ -9,6 +9,7 @@
 #include <constant.h>
 
 struct player;
+struct bmb;
 
 // Creates a new player with a given number of available bombs
 struct player* player_init(int bomb_number);
@@ -29,11 +30,14 @@ int  player_get_nb_bomb(struct player * player);
 void player_inc_nb_bomb(struct player * player);
 void player_dec_nb_bomb(struct player * player);
 
-
 // Move the player according to the current direction
 int player_move(struct player* player, struct map* map);
 
 // Display the player on the screen
 void player_display(struct player* player);
+
+//Set a bomb at the player's location
+void player_set_bomb(struct player* player,struct map* map);
+void bomb_update(struct player*player,struct map* map);
 
 #endif /* PLAYER_H_ */

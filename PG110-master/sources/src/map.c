@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
 #include <map.h>
 #include <constant.h>
 #include <misc.h>
@@ -50,7 +49,9 @@ struct map* map_new(int width, int height)
 int map_is_inside(struct map* map, int x, int y)
 {
 	assert(map);
-	return 1;
+	if ((map->width>x)&&(x>=0)&&(map->height>y)&&(y>=0))
+		return 1;
+	return 0;
 }
 
 void map_free(struct map *map)
@@ -120,6 +121,31 @@ void display_scenery(struct map* map, int x, int  y, unsigned char type)
 	}
 }
 
+void display_bombs(struct map* map, int x, int  y, unsigned char type){
+	switch (type & 0x0f) {
+		case BOMB_4:
+			window_display_image(sprite_get_bombs(BOMB_4), x, y);
+		break;
+
+		case BOMB_3	:
+			window_display_image(sprite_get_bombs(BOMB_3), x, y);
+		break;
+
+		case BOMB_2:
+			window_display_image(sprite_get_bombs(BOMB_2), x, y);
+		break;
+
+		case BOMB_1:
+			window_display_image(sprite_get_bombs(BOMB_1), x, y);
+		break;
+
+		case BOMB_BOOM:
+			window_display_image(sprite_get_bombs(BOMB_BOOM), x, y);
+	}
+}
+
+
+
 void map_display(struct map* map)
 {
 	assert(map != NULL);
@@ -132,24 +158,27 @@ void map_display(struct map* map)
 	    y = j * SIZE_BLOC;
 
 	    unsigned char type = map->grid[CELL(i,j)];
-	    
+
 	    switch (type & 0xf0) {
 		case CELL_SCENERY:
 		  display_scenery(map, x, y, type);
 		  break;
-	    case CELL_BOX:
+	  case CELL_BOX:
 	      window_display_image(sprite_get_box(), x, y);
 	      break;
-	    case CELL_BONUS:
+	  case CELL_BONUS:
 	      display_bonus(map, x, y, type);
 	      break;
-	    case CELL_KEY:
+	  case CELL_KEY:
 	      window_display_image(sprite_get_key(), x, y);
 	      break;
-	    case CELL_DOOR:
+	  case CELL_DOOR:
 	      // pas de gestion du type de porte
-	      window_display_image(sprite_get_door_opened(), x, y);
+	      window_display_image(sprite_get_door_opened(),x,y);
 	      break;
+		case CELL_BOMB:
+			display_bombs(map, x, y, type);
+			break;
 	    }
 	  }
 	}

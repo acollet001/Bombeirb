@@ -9,6 +9,7 @@
 #include <misc.h>
 #include <window.h>
 #include <sprite.h>
+#include <player.h>
 
 struct game {
 	struct map** maps;       // the game's map
@@ -126,6 +127,7 @@ static short input_keyboard(struct game* game) {
 				player_move(player, map);
 				break;
 			case SDLK_SPACE:
+				player_set_bomb(player,map);
 				break;
 			default:
 				break;
@@ -138,8 +140,12 @@ static short input_keyboard(struct game* game) {
 }
 
 int game_update(struct game* game) {
+	struct player* player = game_get_player(game);
+	struct map* map = game_get_current_map(game);
+	bomb_update(player,map);
 	if (input_keyboard(game))
 		return 1; // exit game
+
 
 	return 0;
 }
