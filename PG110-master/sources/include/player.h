@@ -37,7 +37,8 @@ int player_move(struct player* player, struct map* map);
 void player_display(struct player* player);
 
 //Set a bomb at the player's location
-void player_set_bomb(struct player* player,struct map* map);
+void player_set_bomb(struct player* player,struct map*map);
+void chain_explo(int x,int y,int timer,struct player* player);
 void bomb_update(struct player*player,struct map* map);
 
 #endif /* PLAYER_H_ */

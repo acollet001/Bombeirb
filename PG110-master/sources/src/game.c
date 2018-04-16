@@ -143,6 +143,7 @@ int game_update(struct game* game) {
 	struct player* player = game_get_player(game);
 	struct map* map = game_get_current_map(game);
 	bomb_update(player,map);
+	monster_update();
 	if (input_keyboard(game))
 		return 1; // exit game
 

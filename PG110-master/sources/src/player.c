@@ -23,7 +23,7 @@ struct player {
 	enum direction current_direction;
 	int nb_bombs;
 	int power;
-	struct bmb*tab[8];
+	struct bmb*tab[20];
 };
 
 
@@ -35,9 +35,9 @@ struct player* player_init(int bomb_number) {
 
 	player->current_direction = SOUTH;
 	player->nb_bombs = bomb_number;
-	player->power=2;
+	player->power=3;
 	int i=0;
-	while(i<8){
+	while(i<20){
 		player->tab[i]=malloc(sizeof(struct bmb));
 		player->tab[i]->timeb=0;
 		i++;
@@ -200,15 +200,30 @@ void player_display(struct player* player) {
 			player->x * SIZE_BLOC, player->y * SIZE_BLOC);
 }
 
-void player_set_bomb(struct player* player,struct map* map){
+void player_set_bomb(struct player* player,struct map*map){
+	assert(player);
+	assert(map);
+	if (map_get_cell_type(map ,player->x,player->y)!=CELL_BOMB) {
+		int i=0;
+		while (i<20){
+			if (player->tab[i]->timeb==0){
+				player->tab[i]->x=player->x;
+				player->tab[i]->y=player->y;
+				player->tab[i]->power=player->power;
+				player->tab[i]->timeb=SDL_GetTicks();
+				break;
+			}
+			i++;
+		}
+	}
+}
+
+void chain_explo(int x,int y,int timer,struct player* player){
 	assert(player);
 	int i=0;
-	while (i<8){
-		if (player->tab[i]->timeb==0){
-			player->tab[i]->x=player->x;
-			player->tab[i]->y=player->y;
-			player->tab[i]->power=player->power;
-			player->tab[i]->timeb=SDL_GetTicks();
+	while (i<20){
+		if ((player->tab[i]->x==x)&&(player->tab[i]->y==y)){
+			player->tab[i]->timeb=SDL_GetTicks()-timer;
 		break;
 		}
 		i++;
@@ -218,7 +233,7 @@ void player_set_bomb(struct player* player,struct map* map){
 void bomb_update(struct player* player,struct map* map){
 		int i=0;
 		int j=SDL_GetTicks();
-		while (i<8){
+		while (i<20){
 			if ((player->tab[i]->timeb)!=0){
 				if(j-player->tab[i]->timeb<=1000) {
 						map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y,CELL_BOMB_4);
@@ -238,27 +253,96 @@ void bomb_update(struct player* player,struct map* map){
 						map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y,CELL_BOOM);
 						while (p<=power){
 							if (map_is_inside(map ,player->tab[i]->x+p,player->tab[i]->y)){
-								if (((map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y))==(CELL_EMPTY)) ||((map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y))==(CELL_BOX))){
-									map_set_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y,CELL_BOOM);
-						}
-					}
-							if (map_is_inside(map ,player->tab[i]->x-p,player->tab[i]->y)){
-								if (((map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y))==(CELL_EMPTY)) ||((map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y))==(CELL_BOX))){
-									map_set_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y,CELL_BOOM);
-						}
-					}
-					if (map_is_inside(map ,player->tab[i]->x,player->tab[i]->y+p)){
-						if (((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p))==(CELL_EMPTY)) ||((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p))==(CELL_BOX))){
-							map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p,CELL_BOOM);
-						}
-					}
-					if (map_is_inside(map ,player->tab[i]->x,player->tab[i]->y-p)){
-						if (((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p))==(CELL_EMPTY)) ||((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p))==(CELL_BOX))){
-							map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p,CELL_BOOM);
-						}
-					}
-							p++;
-						}
+								if (map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_EMPTY || map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_BONUS){
+										map_set_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y,CELL_BOOM);
+										}
+								else if (map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_BOX){
+										map_set_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y,CELL_BOOM);
+										break;
+									}
+								else if (map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_SCENERY || map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_KEY){
+										break;
+									}
+								else if (map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_BOOM){
+									break;
+								}
+								else if (map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_BOMB){
+									chain_explo(player->tab[i]->x+p,player->tab[i]->y,4001,player);
+									break;
+								}
+
+							}
+								p++;
+							}
+							p=1;
+							while (p<=power){
+								if (map_is_inside(map ,player->tab[i]->x-p,player->tab[i]->y)){
+									if (map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_EMPTY || map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_BONUS){
+											map_set_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y,CELL_BOOM);
+											}
+									else if (map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_BOX){
+											map_set_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y,CELL_BOOM);
+											break;
+										}
+									else if (map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_SCENERY || map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_KEY){
+											break;
+										}
+										else if (map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_BOOM){
+											break;
+										}
+										else if (map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_BOMB){
+											chain_explo(player->tab[i]->x-p,player->tab[i]->y,4001,player);
+											break;
+										}
+									}
+									p++;
+								}
+								p=1;
+								while (p<=power){
+									if (map_is_inside(map ,player->tab[i]->x,player->tab[i]->y+p)){
+										if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_EMPTY || map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_BONUS ){
+												map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p,CELL_BOOM);
+												}
+										else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_BOX){
+												map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p,CELL_BOOM);
+												break;
+											}
+										else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_SCENERY || map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_KEY){
+												break;
+											}
+										else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_BOOM){
+												break;
+											}
+											else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_BOMB){
+												chain_explo(player->tab[i]->x,player->tab[i]->y+p,4001,player);
+												break;
+											}
+										}
+										p++;
+									}
+									p=1;
+									while (p<=power){
+										if (map_is_inside(map ,player->tab[i]->x,player->tab[i]->y-p)){
+											if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_EMPTY || map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_BONUS){
+													map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p,CELL_BOOM);
+													}
+											else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_BOX){
+													map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p,CELL_BOOM);
+													break;
+												}
+											else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_SCENERY || map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_KEY){
+													break;
+												}
+												else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_BOOM){
+													break;
+												}
+												else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_BOMB){
+													chain_explo(player->tab[i]->x,player->tab[i]->y-p,4001,player);
+													break;
+												}
+											}
+											p++;
+										}
 					}
 			 if(j-player->tab[i]->timeb>4500) {
 					int power=player->tab[i]->power;
@@ -266,22 +350,22 @@ void bomb_update(struct player* player,struct map* map){
 					map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y,CELL_EMPTY);
 					while (p<=power){
 						if (map_is_inside(map ,player->tab[i]->x+p,player->tab[i]->y)){
-							if ((map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y))==(CELL_BOMB)){
+							if ((map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y))==(CELL_BOOM)){
 								map_set_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y,CELL_EMPTY);
 					}
 				}
 						if (map_is_inside(map ,player->tab[i]->x-p,player->tab[i]->y)){
-							if ((map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y))==(CELL_BOMB)){
+							if ((map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y))==(CELL_BOOM)){
 								map_set_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y,CELL_EMPTY);
 					}
 				}
 				if (map_is_inside(map ,player->tab[i]->x,player->tab[i]->y+p)){
-					if ((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p))==(CELL_BOMB)){
+					if ((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p))==(CELL_BOOM)){
 						map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p,CELL_EMPTY);
 					}
 				}
 				if (map_is_inside(map ,player->tab[i]->x,player->tab[i]->y-p)){
-					if ((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p))==(CELL_BOMB)){
+					if ((map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p))==(CELL_BOOM)){
 						map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p,CELL_EMPTY);
 					}
 				}

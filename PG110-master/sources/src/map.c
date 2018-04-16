@@ -17,6 +17,13 @@ struct map {
 	int width;
 	int height;
 	unsigned char* grid;
+	struct mst*tab[50];
+};
+
+struct monster{
+	int x,y;
+	int timem;
+	enum direction current_direction;
 };
 
 #define CELL(i,j) ( (i) + (j) * map->width)
@@ -35,6 +42,12 @@ struct map* map_new(int width, int height)
 	map->grid = malloc(height * width);
 	if (map->grid == NULL) {
 		error("map_new : malloc grid failed");
+	}
+
+	while (i<50){
+		map->tab[i]=malloc(sizeof(struct mst));
+		map->tab[i]->timeb=0;
+		i++;
 	}
 
 	// Grid cleaning
@@ -138,12 +151,8 @@ void display_bombs(struct map* map, int x, int  y, unsigned char type){
 		case BOMB_1:
 			window_display_image(sprite_get_bombs(BOMB_1), x, y);
 		break;
-
-		case BOMB_BOOM:
-			window_display_image(sprite_get_bombs(BOMB_BOOM), x, y);
 	}
 }
-
 
 
 void map_display(struct map* map)
@@ -179,6 +188,9 @@ void map_display(struct map* map)
 		case CELL_BOMB:
 			display_bombs(map, x, y, type);
 			break;
+		case CELL_BOOM:
+			window_display_image(sprite_get_boom(),x,y);
+			break;
 	    }
 	  }
 	}
@@ -208,3 +220,27 @@ struct map* map_get_static(void)
 
 	return map;
 }
+
+
+
+/*
+void monster_update(struct map*map){
+	int i=0;
+	int j=0;
+	int k=0;
+	while (i<=map->width){
+		while(j<=map->height){
+			if (CELL(i,j)==CELL_MONSTER){
+				while (k<50){
+					if ((map->tab[i]->x==k)&&(map->tab[i]->y==k)){
+						if (map->tab[i]->timem
+
+					}
+					k++;
+				}
+			}
+		}
+	}
+
+}
+*/

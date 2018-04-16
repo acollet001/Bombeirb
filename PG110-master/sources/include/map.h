@@ -13,7 +13,8 @@ enum cell_type {
 	CELL_KEY=0x40,       	//  0100 0000
 	CELL_BONUS=0x50, 		// 	0101 0000
 	CELL_MONSTER=0x60, 		// 	0110 0000
-	CELL_BOMB=0x70 	   		// 	0111 0000
+	CELL_BOMB=0x70 ,	   		// 	0111 0000
+	CELL_BOOM=0x80,
 
 };
 
@@ -31,7 +32,6 @@ enum bomb_time{
 	BOMB_3=1,
 	BOMB_2=2,
 	BOMB_1=3,
-	BOMB_BOOM=4,
 };
 
 enum scenery_type {
@@ -56,10 +56,10 @@ enum compose_type {
 	CELL_BOMB_3 = CELL_BOMB | BOMB_3,
 	CELL_BOMB_2 = CELL_BOMB | BOMB_2,
 	CELL_BOMB_1 = CELL_BOMB | BOMB_1,
-	CELL_BOOM   = CELL_BOMB | BOMB_BOOM,
 };
 
 struct map;
+struct monster;
 
 // Create a new empty map
 struct map* map_new(int width, int height);

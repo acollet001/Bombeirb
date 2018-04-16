@@ -77,7 +77,8 @@ SDL_Surface* bonus[NB_BONUS + 1];
 SDL_Surface* player_img[4];
 
 //bombs
-SDL_Surface* bombs[5];
+SDL_Surface* bombs[4];
+SDL_Surface* boom;
 
 static void banner_load() {
 	// numbers imgs
@@ -120,6 +121,7 @@ static void map_load() {
 	stone = load_image(MAP_STONE);
 	door_opened = load_image(MAP_DOOR_OPENED);
 	door_closed = load_image(MAP_DOOR_CLOSED);
+	boom = load_image(BOOM);
 }
 
 static void map_unload() {
@@ -130,6 +132,7 @@ static void map_unload() {
 	SDL_FreeSurface(stone);
 	SDL_FreeSurface(door_opened);
 	SDL_FreeSurface(door_closed);
+	SDL_FreeSurface(boom);
 }
 
 static void bonus_load() {
@@ -164,11 +167,10 @@ static void bomb_load(){
 	bombs[1] = load_image(BOMB_TTL3);
 	bombs[2] = load_image(BOMB_TTL2);
 	bombs[3] = load_image(BOMB_TTL1);
-	bombs[4] = load_image(BOOM);
 }
 
 static void bomb_unload(){
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 4; i++)
 		if(bombs[i])
 			SDL_FreeSurface(bombs[i]);
 }
@@ -227,6 +229,11 @@ SDL_Surface* sprite_get_banner_range() {
 SDL_Surface* sprite_get_bonus(enum bonus_type bonus_type) {
 	assert(bonus[bonus_type]);
 	return bonus[bonus_type];
+}
+
+SDL_Surface* sprite_get_boom(){
+	assert (boom);
+	return boom;
 }
 
 SDL_Surface* sprite_get_tree() {
