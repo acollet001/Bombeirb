@@ -5,6 +5,7 @@
 #ifndef MAP_H_
 #define MAP_H_
 
+
 enum cell_type {
 	CELL_EMPTY=0x00,   		//  0000 0000
 	CELL_SCENERY=0x10, 		//  0001 0000
@@ -17,6 +18,12 @@ enum cell_type {
 	CELL_BOOM=0x80,
 
 };
+enum monster_direction{
+	MONSTER_S=0,
+	MONSTER_N=1,
+	MONSTER_W=2,
+	MONSTER_E=3,
+};
 
 enum bonus_type {
 	BONUS_BOMB_RANGE_DEC=1,
@@ -24,7 +31,7 @@ enum bonus_type {
 	BONUS_BOMB_NB_DEC=3,
 	BONUS_BOMB_NB_INC=4,
 	BONUS_MONSTER=5,
-	BONUS_LIFE=6
+	BONUS_LIFE=6,
 };
 
 enum bomb_time{
@@ -49,17 +56,29 @@ enum compose_type {
   CELL_BOX_RANGEDEC = CELL_BOX | BONUS_BOMB_RANGE_INC,
 	CELL_BOX_BOMBINC  = CELL_BOX | BONUS_BOMB_NB_DEC,
   CELL_BOX_BOMBDEC  = CELL_BOX | BONUS_BOMB_NB_INC,
-  CELL_BOX_LIFE     = CELL_BOX | BONUS_MONSTER,
-  CELL_BOX_MONSTER  = CELL_BOX | BONUS_LIFE,
+  CELL_BOX_LIFE     = CELL_BOX | BONUS_LIFE,
+  CELL_BOX_MONSTER  = CELL_BOX | BONUS_MONSTER,
 
 	CELL_BOMB_4 = CELL_BOMB | BOMB_4,
 	CELL_BOMB_3 = CELL_BOMB | BOMB_3,
 	CELL_BOMB_2 = CELL_BOMB | BOMB_2,
 	CELL_BOMB_1 = CELL_BOMB | BOMB_1,
+
+	CELL_MS = CELL_MONSTER | MONSTER_S,
+	CELL_MN = CELL_MONSTER | MONSTER_N,
+	CELL_MW = CELL_MONSTER | MONSTER_W,
+	CELL_ME = CELL_MONSTER | MONSTER_E,
+
+	BONUS_N_INC = CELL_BONUS | BONUS_BOMB_NB_INC,
+	BONUS_N_DEC = CELL_BONUS | BONUS_BOMB_NB_DEC,
+	BONUS_R_INC = CELL_BONUS | BONUS_BOMB_RANGE_INC,
+	BONUS_R_DEC = CELL_BONUS | BONUS_BOMB_RANGE_DEC,
+	BONUS_L     = CELL_BONUS | BONUS_LIFE,
+
 };
 
 struct map;
-struct monster;
+struct mst;
 
 // Create a new empty map
 struct map* map_new(int width, int height);
@@ -73,6 +92,7 @@ int map_get_height(struct map* map);
 
 // Return the type of a cell
 enum cell_type map_get_cell_type(struct map* map, int x, int y);
+enum compose_type map_get_cell_type2(struct map*map,int x,int y);
 
 
 // Set the type of a cell
@@ -84,10 +104,21 @@ int map_is_inside(struct map* map, int x, int y);
 // Return a default static map
 struct map* map_get_static();
 
-//Display bombs on the screen
+// Display bombs on the screen
 void display_bombs(struct map* map, int x, int  y, unsigned char type);
+
+// Display monsters on the screen
+void display_monster(struct map* map, int x, int  y, unsigned char type);
 
 // Display the map on the screen
 void map_display(struct map* map);
+
+// Update monster positions
+void update_monster(struct map*map);
+void monster_reini(struct map*map,int x, int y);
+void monster_add(struct map*map,int x, int y);
+
+// Apply bonus to the player
+int player_bonus(struct map*map, int x,int y);
 
 #endif /* MAP_H_ */

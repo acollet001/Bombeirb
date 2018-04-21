@@ -63,13 +63,13 @@ void game_banner_display(struct game* game) {
 	for (int i = 0; i < map_get_width(map); i++)
 		window_display_image(sprite_get_banner_line(), i * SIZE_BLOC, y);
 
-	int white_bloc = ((map_get_width(map) * SIZE_BLOC) - 6 * SIZE_BLOC) / 4;
+	int white_bloc = ((map_get_width(map) * SIZE_BLOC) - 8 * SIZE_BLOC) / 5;
 	int x = white_bloc;
 	y = (map_get_height(map) * SIZE_BLOC) + LINE_HEIGHT;
 	window_display_image(sprite_get_banner_life(), x, y);
 
 	x = white_bloc + SIZE_BLOC;
-	window_display_image(sprite_get_number(2), x, y);
+	window_display_image(sprite_get_number(player_get_life(game_get_player(game))), x, y);
 
 	x = 2 * white_bloc + 2 * SIZE_BLOC;
 	window_display_image(sprite_get_banner_bomb(), x, y);
@@ -83,6 +83,12 @@ void game_banner_display(struct game* game) {
 
 	x = 3 * white_bloc + 5 * SIZE_BLOC;
 	window_display_image(sprite_get_number(1), x, y);
+
+	x=4* white_bloc + 6*SIZE_BLOC;
+	window_display_image(sprite_get_key(), x, y);
+	x=4* white_bloc + 7*SIZE_BLOC;
+	window_display_image(sprite_get_number(1), x, y);
+
 }
 
 void game_display(struct game* game) {
@@ -143,7 +149,9 @@ int game_update(struct game* game) {
 	struct player* player = game_get_player(game);
 	struct map* map = game_get_current_map(game);
 	bomb_update(player,map);
-	monster_update();
+	monster_update(map);
+  bonus_apparition(player,map);
+	invulnerability(player);
 	if (input_keyboard(game))
 		return 1; // exit game
 

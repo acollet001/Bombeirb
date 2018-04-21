@@ -8,6 +8,7 @@
 #include <map.h>
 #include <constant.h>
 
+struct box_bonus;
 struct player;
 struct bmb;
 
@@ -30,6 +31,15 @@ int  player_get_nb_bomb(struct player * player);
 void player_inc_nb_bomb(struct player * player);
 void player_dec_nb_bomb(struct player * player);
 
+// Set, Increase, Decrease life
+int player_get_life(struct player*player);
+void player_inc_life(struct player * player);
+void player_dec_life(struct player * player);
+
+//Increase,Decrease the range of bombs
+void player_inc_r_bomb(struct player*player);
+void player_dec_r_bomb(struct player*player);
+
 // Move the player according to the current direction
 int player_move(struct player* player, struct map* map);
 
@@ -41,4 +51,8 @@ void player_set_bomb(struct player* player,struct map*map);
 void chain_explo(int x,int y,int timer,struct player* player);
 void bomb_update(struct player*player,struct map* map);
 
+void bonus_apparition(struct player*player,struct map*map);
+
+
+void invulnerability(struct player*player,struct map*map);
 #endif /* PLAYER_H_ */

@@ -12,16 +12,25 @@
 #include <misc.h>
 #include <constant.h>
 
+struct box_bonus{
+int x,y;
+int bonus;
+int timebon;
+};
+
 struct bmb{
 	int timeb;
 	int x,y;
 	int power;
+	struct box_bonus*box[4]; // for the 4 cardinal directions
 };
 
 struct player {
+	int timep; // invulnerability frame
 	int x, y;
 	enum direction current_direction;
 	int nb_bombs;
+	int life;
 	int power;
 	struct bmb*tab[20];
 };
@@ -35,11 +44,20 @@ struct player* player_init(int bomb_number) {
 
 	player->current_direction = SOUTH;
 	player->nb_bombs = bomb_number;
-	player->power=3;
+	player->power=1;
+	player->timep=0;
 	int i=0;
+	int j=0;
+	player->life=2;
 	while(i<20){
 		player->tab[i]=malloc(sizeof(struct bmb));
 		player->tab[i]->timeb=0;
+		while (j<4){
+			player->tab[i]->box[j]=malloc(sizeof(struct box_bonus));
+			player->tab[i]->box[j]->bonus=0;
+			player->tab[i]->box[j]->timebon=0;
+			j++;
+	}
 		i++;
 	}
 
@@ -87,7 +105,36 @@ void player_inc_nb_bomb(struct player* player) {
 
 void player_dec_nb_bomb(struct player* player) {
 	assert(player);
+	if(player->nb_bombs>1)
 	player->nb_bombs -= 1;
+}
+
+void player_inc_r_bomb(struct player*player){
+	assert (player);
+	player->power++;
+}
+
+void player_dec_r_bomb(struct player*player){
+	assert (player);
+	if (player->power>1)
+		player->power--;
+}
+
+int player_get_life(struct player*player){
+	assert(player);
+	return player->life;
+}
+
+void player_inc_life(struct player*player){
+	assert (player);
+	player->life++;
+}
+
+void player_dec_life(struct player*player){
+	assert (player);
+	if (player->life>1){
+	player->life--;
+}
 }
 
 static int player_move_aux(struct player* player, struct map* map, int x, int y) {
@@ -105,28 +152,28 @@ static int player_move_aux(struct player* player, struct map* map, int x, int y)
 	switch (player->current_direction) {
 		case NORTH:
 			if (map_is_inside(map, x, y-1) && map_get_cell_type(map, x, y-1)==CELL_EMPTY){
-				map_set_cell_type(map,x, y-1, CELL_BOX);
+				map_set_cell_type(map,x, y-1, map_get_cell_type2(map,x,y));
 				map_set_cell_type(map, x, y, CELL_EMPTY);
 				return 1;
 			}
 			break;
 		case SOUTH:
 			if (map_is_inside(map, x, y+1) && map_get_cell_type(map, x, y+1)==CELL_EMPTY){
-				map_set_cell_type(map,x, y+1, CELL_BOX);
+				map_set_cell_type(map,x, y+1, map_get_cell_type2(map,x,y));
 				map_set_cell_type(map, x, y, CELL_EMPTY);
 			return 1;
 		}
 			break;
 		case WEST:
 			if (map_is_inside(map, x-1, y) && map_get_cell_type(map, x-1, y)==CELL_EMPTY){
-				map_set_cell_type(map,x-1, y, CELL_BOX);
+				map_set_cell_type(map,x-1, y, map_get_cell_type2(map,x,y));
 				map_set_cell_type(map, x, y,CELL_EMPTY);
 			return 1;
 		}
 			break;
 		case EAST:
 			if (map_is_inside(map, x+1, y) && map_get_cell_type(map, x+1, y)==CELL_EMPTY){
-				map_set_cell_type(map,x+1, y, CELL_BOX);
+				map_set_cell_type(map,x+1, y,map_get_cell_type2(map,x,y));
 				map_set_cell_type(map, x, y, CELL_EMPTY);
 			return 1;
 		}
@@ -136,14 +183,48 @@ static int player_move_aux(struct player* player, struct map* map, int x, int y)
 		break;
 
 	case CELL_BONUS:
+		switch (player_bonus(map,x,y)){
+			case 1:
+			player_inc_r_bomb(player);
+			break;
+
+			case 2:
+			player_dec_r_bomb(player);
+			break;
+
+			case 3:
+			player_dec_nb_bomb(player);
+			break;
+
+			case 4:
+			player_inc_nb_bomb(player);
+			break;
+
+			case 6:
+			player_inc_life(player);
+			break;
+		}
+		map_set_cell_type(map,x,y,CELL_EMPTY);
 		break;
 
 	case CELL_MONSTER:
+		if (player->timep==0){
+			player_dec_life(player);
+			player->timep=SDL_GetTicks();
+		}
 		break;
 
 	case CELL_BOMB:
 		return 0;
 		break;
+
+		case CELL_BOOM:
+		if (player->timep==0){
+			player_dec_life(player);
+			player->timep=SDL_GetTicks();
+		}
+		break;
+
 
 	default:
 		break;
@@ -196,14 +277,24 @@ int player_move(struct player* player, struct map* map) {
 
 void player_display(struct player* player) {
 	assert(player);
+	if (player->timep==0){
 	window_display_image(sprite_get_player(player->current_direction),
 			player->x * SIZE_BLOC, player->y * SIZE_BLOC);
+		}
+	else {
+		int j=SDL_GetTicks();
+		if (j-player->timep<250 ||( j-player->timep<750 && j-player->timep>500) || ( j-player->timep<1250 && j-player->timep>1000)||( j-player->timep<1750 && j-player->timep>1500)){
+		window_display_image(sprite_get_player(player->current_direction),
+		player->x * SIZE_BLOC, player->y * SIZE_BLOC);
+	}
+}
 }
 
 void player_set_bomb(struct player* player,struct map*map){
 	assert(player);
 	assert(map);
-	if (map_get_cell_type(map ,player->x,player->y)!=CELL_BOMB) {
+	if (map_get_cell_type(map ,player->x,player->y) == CELL_EMPTY && player->nb_bombs>0) {
+		player->nb_bombs--;
 		int i=0;
 		while (i<20){
 			if (player->tab[i]->timeb==0){
@@ -257,6 +348,12 @@ void bomb_update(struct player* player,struct map* map){
 										map_set_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y,CELL_BOOM);
 										}
 								else if (map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_BOX){
+									if (player_bonus(map,player->tab[i]->x+p,player->tab[i]->y)){ // display the bonus into the box after 500 ms
+										player->tab[i]->box[0]->bonus=player_bonus(map,player->tab[i]->x+p,player->tab[i]->y);
+										player->tab[i]->box[0]->x=player->tab[i]->x+p;
+										player->tab[i]->box[0]->y=player->tab[i]->y;
+										player->tab[i]->box[0]->timebon=j;
+									}
 										map_set_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y,CELL_BOOM);
 										break;
 									}
@@ -270,6 +367,11 @@ void bomb_update(struct player* player,struct map* map){
 									chain_explo(player->tab[i]->x+p,player->tab[i]->y,4001,player);
 									break;
 								}
+								else if (map_get_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y)==CELL_MONSTER){
+									map_set_cell_type(map ,player->tab[i]->x+p,player->tab[i]->y,CELL_BOOM);
+									monster_reini(map,player->tab[i]->x+p,player->tab[i]->y);
+									break;
+								}
 
 							}
 								p++;
@@ -281,6 +383,12 @@ void bomb_update(struct player* player,struct map* map){
 											map_set_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y,CELL_BOOM);
 											}
 									else if (map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_BOX){
+										if (player_bonus(map,player->tab[i]->x-p,player->tab[i]->y)){ // display the bonus into the box after 500 ms
+										  player->tab[i]->box[1]->bonus=player_bonus(map,player->tab[i]->x-p,player->tab[i]->y);
+											player->tab[i]->box[1]->x=player->tab[i]->x-p;
+											player->tab[i]->box[1]->y=player->tab[i]->y;
+											player->tab[i]->box[1]->timebon=j;
+										}
 											map_set_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y,CELL_BOOM);
 											break;
 										}
@@ -294,6 +402,11 @@ void bomb_update(struct player* player,struct map* map){
 											chain_explo(player->tab[i]->x-p,player->tab[i]->y,4001,player);
 											break;
 										}
+										else if (map_get_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y)==CELL_MONSTER){
+											map_set_cell_type(map ,player->tab[i]->x-p,player->tab[i]->y,CELL_BOOM);
+											monster_reini(map,player->tab[i]->x-p,player->tab[i]->y);
+											break;
+										}
 									}
 									p++;
 								}
@@ -304,6 +417,12 @@ void bomb_update(struct player* player,struct map* map){
 												map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p,CELL_BOOM);
 												}
 										else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_BOX){
+											if (player_bonus(map,player->tab[i]->x,player->tab[i]->y+p)){ // display the bonus into the box after 500 ms
+												player->tab[i]->box[2]->bonus=player_bonus(map,player->tab[i]->x,player->tab[i]->y+p);
+												player->tab[i]->box[2]->x=player->tab[i]->x;
+												player->tab[i]->box[2]->y=player->tab[i]->y+p;
+												player->tab[i]->box[2]->timebon=j;
+											}
 												map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p,CELL_BOOM);
 												break;
 											}
@@ -317,6 +436,11 @@ void bomb_update(struct player* player,struct map* map){
 												chain_explo(player->tab[i]->x,player->tab[i]->y+p,4001,player);
 												break;
 											}
+											else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p)==CELL_MONSTER){
+												map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y+p,CELL_BOOM);
+											  monster_reini(map,player->tab[i]->x,player->tab[i]->y+p);
+												break;
+											}
 										}
 										p++;
 									}
@@ -327,6 +451,12 @@ void bomb_update(struct player* player,struct map* map){
 													map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p,CELL_BOOM);
 													}
 											else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_BOX){
+												if (player_bonus(map,player->tab[i]->x,player->tab[i]->y-p)){ // display the bonus into the box after 500 ms
+													player->tab[i]->box[3]->bonus=player_bonus(map,player->tab[i]->x,player->tab[i]->y-p);
+													player->tab[i]->box[3]->x=player->tab[i]->x;
+													player->tab[i]->box[3]->y=player->tab[i]->y-p;
+													player->tab[i]->box[3]->timebon=j;
+												}
 													map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p,CELL_BOOM);
 													break;
 												}
@@ -340,9 +470,15 @@ void bomb_update(struct player* player,struct map* map){
 													chain_explo(player->tab[i]->x,player->tab[i]->y-p,4001,player);
 													break;
 												}
+												else if (map_get_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p)==CELL_MONSTER){
+													map_set_cell_type(map ,player->tab[i]->x,player->tab[i]->y-p,CELL_BOOM);
+													monster_reini(map,player->tab[i]->x,player->tab[i]->y-p);
+													break;
+												}
 											}
 											p++;
 										}
+
 					}
 			 if(j-player->tab[i]->timeb>4500) {
 					int power=player->tab[i]->power;
@@ -371,9 +507,68 @@ void bomb_update(struct player* player,struct map* map){
 				}
 						p++;
 				}
-				 player->tab[i]->timeb=0;
+				player->nb_bombs++;
+				player->tab[i]->timeb=0;
 				}
 			}
 			i++;
+		}
+}
+
+void bonus_apparition(struct player*player,struct map*map){
+	int j=0;
+	int i=0;
+	int k=SDL_GetTicks();
+	while(i<20){
+	while(j<4){
+		if (k-player->tab[i]->box[j]->timebon>500){
+		if (player->tab[i]->box[j]->bonus==1){
+		 map_set_cell_type(map,player->tab[i]->box[j]->x,player->tab[i]->box[j]->y,BONUS_R_INC);
+		 player->tab[i]->box[j]->timebon=0;
+		 player->tab[i]->box[j]->bonus=0;
+	 }
+		else if(player->tab[i]->box[j]->bonus==2) {
+		 map_set_cell_type(map,player->tab[i]->box[j]->x,player->tab[i]->box[j]->y,BONUS_R_DEC);
+		 player->tab[i]->box[j]->timebon=0;
+		 player->tab[i]->box[j]->bonus=0;
+	 }
+	 else if(player->tab[i]->box[j]->bonus==3){
+		 map_set_cell_type(map,player->tab[i]->box[j]->x,player->tab[i]->box[j]->y,BONUS_N_DEC);
+		 player->tab[i]->box[j]->timebon=0;
+		 player->tab[i]->box[j]->bonus=0;
+	 }
+	 else if(player->tab[i]->box[j]->bonus==4){
+		 map_set_cell_type(map,player->tab[i]->box[j]->x,player->tab[i]->box[j]->y,BONUS_N_INC);
+		 player->tab[i]->box[j]->timebon=0;
+		 player->tab[i]->box[j]->bonus=0;
+	 }
+	 else if(player->tab[i]->box[j]->bonus==5){
+		 map_set_cell_type(map,player->tab[i]->box[j]->x,player->tab[i]->box[j]->y,CELL_MS);
+		 monster_add(map,player->tab[i]->box[j]->x,player->tab[i]->box[j]->y);
+		 player->tab[i]->box[j]->timebon=0;
+		 player->tab[i]->box[j]->bonus=0;
+	 }
+	 else if(player->tab[i]->box[j]->bonus==6){
+		 map_set_cell_type(map,player->tab[i]->box[j]->x,player->tab[i]->box[j]->y,BONUS_L);
+		 player->tab[i]->box[j]->timebon=0;
+		 player->tab[i]->box[j]->bonus=0;
+	 }
+ 	}
+	 j++;
+ 	}
+	i++;
+}
+}
+
+void invulnerability(struct player*player,struct map*map){
+		int i=SDL_GetTicks();
+	if ((map_get_cell_type(map,player->x,player->y)==CELL_BOOM || map_get_cell_type(map,player->x,player->y)==CELL_MONSTER) && player->timep==0){
+		if (player->life>1){
+			player_dec_life(player);
+		}
+		player->timep=i;
+	}
+		if  (i-player->timep>2000){
+			player->timep=0;
 		}
 }
