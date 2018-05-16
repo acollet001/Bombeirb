@@ -15,8 +15,8 @@ enum cell_type {
 	CELL_BONUS=0x50, 		// 	0101 0000
 	CELL_MONSTER=0x60, 		// 	0110 0000
 	CELL_BOMB=0x70 ,	   		// 	0111 0000
-	CELL_BOOM=0x80,
-
+	CELL_BOOM=0x80,   //1000 0000
+	CELL_DOOR_CLOSED=0x90,  //1001 0000
 };
 enum monster_direction{
 	MONSTER_S=0,
@@ -32,6 +32,7 @@ enum bonus_type {
 	BONUS_BOMB_NB_INC=4,
 	BONUS_MONSTER=5,
 	BONUS_LIFE=6,
+	BONUS_KEY=7,
 };
 
 enum bomb_time{
@@ -58,6 +59,7 @@ enum compose_type {
   CELL_BOX_BOMBDEC  = CELL_BOX | BONUS_BOMB_NB_INC,
   CELL_BOX_LIFE     = CELL_BOX | BONUS_LIFE,
   CELL_BOX_MONSTER  = CELL_BOX | BONUS_MONSTER,
+	CELL_BOX_KEY			= CELL_BOX | BONUS_KEY,
 
 	CELL_BOMB_4 = CELL_BOMB | BOMB_4,
 	CELL_BOMB_3 = CELL_BOMB | BOMB_3,
@@ -90,9 +92,12 @@ void map_free(struct map* map);
 int map_get_width(struct map* map);
 int map_get_height(struct map* map);
 
+
+
 // Return the type of a cell
 enum cell_type map_get_cell_type(struct map* map, int x, int y);
 enum compose_type map_get_cell_type2(struct map*map,int x,int y);
+enum compose_type map_get_cell_type3(struct map*map,int x);
 
 
 // Set the type of a cell
@@ -101,8 +106,8 @@ void  map_set_cell_type(struct map* map, int x, int y, enum cell_type type);
 // Test if (x,y) is within the map
 int map_is_inside(struct map* map, int x, int y);
 
-// Return a default static map
-struct map* map_get_static();
+// Return a map
+struct map* map_get_static(int z,int i);
 
 // Display bombs on the screen
 void display_bombs(struct map* map, int x, int  y, unsigned char type);
@@ -114,7 +119,7 @@ void display_monster(struct map* map, int x, int  y, unsigned char type);
 void map_display(struct map* map);
 
 // Update monster positions
-void update_monster(struct map*map);
+void monster_update(struct map*map);
 void monster_reini(struct map*map,int x, int y);
 void monster_add(struct map*map,int x, int y);
 

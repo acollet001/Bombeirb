@@ -26,19 +26,32 @@ int player_get_y(struct player* player);
 // Set the direction of the next move of the player
 void player_set_current_way(struct player * player, enum direction direction);
 
-// Set, Increase, Decrease the number of bomb that player can put
+// Give, Increase, Decrease,set the number of bomb that player can put
 int  player_get_nb_bomb(struct player * player);
 void player_inc_nb_bomb(struct player * player);
 void player_dec_nb_bomb(struct player * player);
+void player_set_nb_bomb(struct player*player,int i);
 
-// Set, Increase, Decrease life
+// Give, Increase, Decrease,set life
 int player_get_life(struct player*player);
 void player_inc_life(struct player * player);
 void player_dec_life(struct player * player);
+void player_set_life(struct player*player,int i);
 
-//Increase,Decrease the range of bombs
+//Increase,Decrease,return,set the range of bombs
 void player_inc_r_bomb(struct player*player);
 void player_dec_r_bomb(struct player*player);
+int player_get_r_bomb(struct player*player);
+void player_set_r_bomb(struct player*player,int i);
+
+//Give,increase,Decrease,set keys number
+void inc_nb_key(struct player* player);
+void dec_nb_key(struct player* player);
+int player_get_key(struct player*player);
+void player_set_nb_key(struct player*player,int i);
+
+//Return current level
+int player_cur_level(struct player*player);
 
 // Move the player according to the current direction
 int player_move(struct player* player, struct map* map);
@@ -53,6 +66,7 @@ void bomb_update(struct player*player,struct map* map);
 
 void bonus_apparition(struct player*player,struct map*map);
 
-
+//invulnerability frame
 void invulnerability(struct player*player,struct map*map);
-#endif /* PLAYER_H_ */
+
+#endif

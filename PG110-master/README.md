@@ -5,9 +5,9 @@ Réalisation d'un jeu vidéo 2D : **bombeirb**.
 
 ## Organisation
 
-Le travail est à réaliser en équipe de un à deux étudiants appartenant au même groupe (A, B ou C). Vous devez au préalable former les équipes et les nommer de la forme *GA-T1* pour l'equipe *1* du groupe *A*. 
+Le travail est à réaliser en équipe de un à deux étudiants appartenant au même groupe (A, B ou C). Vous devez au préalable former les équipes et les nommer de la forme *GA-T1* pour l'equipe *1* du groupe *A*.
 
-Nous utilisons la plateforme GitHub pour héberger vos projets. Pour ce faire, vous devez créer un compte utilisateur sur GitHub si vous n'en possédez pas encore. Cliquer ensuite sur le lien [suivant](https://classroom.github.com/g/xY-oPa2P) pour créer votre équipe. Utiliser la convention de nommage précédente. 
+Nous utilisons la plateforme GitHub pour héberger vos projets. Pour ce faire, vous devez créer un compte utilisateur sur GitHub si vous n'en possédez pas encore. Cliquer ensuite sur le lien [suivant](https://classroom.github.com/g/xY-oPa2P) pour créer votre équipe. Utiliser la convention de nommage précédente.
 
 Vous avez les droits administrateur sur votre dépôt et celui-ci est privé (GitHub education). Ajouter l'autre membre du groupe. Le dépôt devrait être initialisé avec le contenu de ce dépôt. Vous pouvez maintenant commencer à travailler.
 
@@ -157,7 +157,7 @@ Comme nous n’utilisons que 3 bits pour coder les différentes carte du jeu, il
 d’un fichier. Pour représenter une partie, nous utiliserons un fichier supplémentaire, lui aussi au format texte, dans le répertoire data. Ce fichier aura le format suivant :
 
 - La première ligne contient le numéro de niveaux
-- La seconde ligne indique la position du joueur sous la forme `level : x, y` où *level* est le numéro du monde, x* et *y* sont les coordonnées sur la carte correspondante.
+- La seconde ligne indique la position du joueur sous la forme `level : x, y` où *level* est le numéro du monde, *x* et *y* sont les coordonnées sur la carte correspondante.
 - La troisième ligne indique le préfixe des fichiers cartes correspondants dans le répertoire *map*. L'exemple ci-dessous représente une partie avec 3 mondes dont chaque carte est de la forme `easy_N`. Le joueur se trouve sur la case en haut à gauche du premier niveau. Au chargement de la partie, il faut afficher le niveau sur lequel se trouve le joueur.
 
 ```

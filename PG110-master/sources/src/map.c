@@ -18,10 +18,10 @@ struct map {
 	int width;
 	int height;
 	unsigned char* grid;
-	struct mst*tab[50];
+	struct mst*tab[80];     //monsters
 };
 
-struct mst{
+struct mst{						//monster pos
 	int x,y;
 	int timem;
 };
@@ -57,6 +57,10 @@ int k=0;
 	    map->grid[CELL(i,j)] = CELL_EMPTY;
 
 	return map;
+}
+
+enum compose_type map_get_cell_type3(struct map*map,int x){
+	return map->grid[x];
 }
 
 int map_is_inside(struct map* map, int x, int y)
@@ -140,6 +144,10 @@ void display_scenery(struct map* map, int x, int  y, unsigned char type)
 	case SCENERY_TREE:
 		window_display_image(sprite_get_tree(), x, y);
 		break;
+
+	case SCENERY_PRINCESS:
+	  window_display_image(sprite_get_princess(), x, y);
+		break;
 	}
 }
 
@@ -207,9 +215,11 @@ void map_display(struct map* map)
 	      window_display_image(sprite_get_key(), x, y);
 	      break;
 	  case CELL_DOOR:
-	      // pas de gestion du type de porte
 	      window_display_image(sprite_get_door_opened(),x,y);
 	      break;
+		case CELL_DOOR_CLOSED:
+				window_display_image(sprite_get_door_closed(),x,y);
+				break;
 		case CELL_BOMB:
 			display_bombs(map, x, y, type);
 			break;
@@ -224,34 +234,42 @@ void map_display(struct map* map)
 	}
 }
 
-struct map* map_get_static(void)
+struct map* map_get_static(int z,int i)
 {
-	struct map* map = map_new(STATIC_MAP_WIDTH, STATIC_MAP_HEIGHT);
 
-	unsigned char themap[STATIC_MAP_WIDTH * STATIC_MAP_HEIGHT] = {
-	  BONUS_L, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY,
-	  CELL_STONE, CELL_STONE, CELL_STONE, CELL_EMPTY, CELL_STONE, CELL_EMPTY, CELL_STONE, CELL_STONE, CELL_STONE, CELL_STONE, CELL_EMPTY, CELL_EMPTY,
-	  CELL_EMPTY,CELL_BOX_MONSTER, CELL_EMPTY, CELL_EMPTY, CELL_STONE, CELL_BOX, CELL_STONE, CELL_EMPTY, CELL_EMPTY, CELL_STONE, CELL_EMPTY, CELL_EMPTY,
-	  CELL_BOX, CELL_EMPTY, CELL_EMPTY, BONUS_R_DEC, CELL_STONE, CELL_BOX, CELL_STONE, CELL_EMPTY, BONUS_N_INC, CELL_STONE, CELL_EMPTY, CELL_EMPTY,
-	  CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_STONE, CELL_BOX, CELL_STONE, CELL_EMPTY, CELL_EMPTY, CELL_STONE, CELL_EMPTY, CELL_EMPTY,
-	  CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_STONE, CELL_STONE, CELL_STONE, CELL_EMPTY, CELL_EMPTY, CELL_STONE, CELL_EMPTY, CELL_EMPTY,
-	  CELL_MONSTER, CELL_EMPTY,BONUS_N_DEC, CELL_EMPTY, CELL_EMPTY, BONUS_R_INC, CELL_EMPTY , CELL_EMPTY, CELL_EMPTY, CELL_STONE,  CELL_EMPTY, CELL_EMPTY,
-	  CELL_EMPTY, CELL_TREE, CELL_BOX, CELL_TREE, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, BONUS_N_INC,  CELL_EMPTY, CELL_STONE,  CELL_EMPTY, CELL_EMPTY,
-	  CELL_EMPTY, CELL_TREE, CELL_TREE, CELL_TREE, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY,  CELL_STONE,  CELL_EMPTY, CELL_EMPTY,
-	  CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_MONSTER, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_STONE,  CELL_EMPTY, CELL_EMPTY,
-	  CELL_BOX, CELL_STONE, CELL_STONE, CELL_STONE, CELL_STONE, CELL_STONE, CELL_STONE, CELL_STONE, CELL_STONE, CELL_STONE,  CELL_BOX_LIFE, CELL_EMPTY,
-	  CELL_BOX,  CELL_EMPTY, CELL_DOOR, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_MONSTER, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY, CELL_EMPTY,
-		};
+	FILE * level =NULL;
+	if (i==0){
+	char carte[14];
+	sprintf(carte,"map/map_%d.txt",z);
+		level=fopen(carte,"r");
 
-	for (int i = 0; i < STATIC_MAP_WIDTH * STATIC_MAP_HEIGHT; i++){
-		map->grid[i] = themap[i];
+}
+if (i==1){
+	char carte2[21];
+	sprintf(carte2,"data/map_saved_%d.txt",z);
+		level=fopen(carte2,"r");
+}
+
+	int WIDTH=0;
+	int HEIGHT=0;
+	fscanf(level,"%d",&WIDTH);
+	fseek(level,2,SEEK_CUR);
+	fscanf(level,"%d",&HEIGHT);
+
+	struct map* map = map_new(WIDTH,HEIGHT);
+
+		int cell=0;
+	for (int i = 0; i < WIDTH * HEIGHT; i++){
+		fscanf(level,"%d",&cell);
+		map->grid[i] = cell;
 	}
+fclose(level);
 
 		//monsters initialization
 		int k=0;
-	for(int l=0; l< STATIC_MAP_HEIGHT;l++){
-		for(int m=0; m< STATIC_MAP_WIDTH;m++){
-			if(map->grid[CELL(l,m)]==CELL_MONSTER){
+	for(int l=0; l< HEIGHT;l++){
+		for(int m=0; m< WIDTH;m++){
+			if((map->grid[CELL(l,m)] & 11110000)==CELL_MONSTER){
 					map->tab[k]->x=l;
 					map->tab[k]->y=m;
 					map->tab[k]->timem=SDL_GetTicks();
@@ -348,6 +366,8 @@ int player_bonus(struct map*map,int x,int y){
 		return 5;
 	case BONUS_LIFE:
 		return 6;
+	case BONUS_KEY:
+		return 7;
 	}
 	return 0;
 }

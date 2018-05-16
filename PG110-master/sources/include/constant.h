@@ -17,9 +17,17 @@
 // Time management
 #define DEFAULT_GAME_FPS 30
 
-// map size
-#define STATIC_MAP_WIDTH  12
-#define STATIC_MAP_HEIGHT 12
+// WINDOW_Constantes
+#define WIN_MENU_L 720
+#define WIN_MENU_l 576
+
+#define WIN_VIC_L 640
+#define WIN_VIC_l 480
+
+#define WIN_GO_L 632
+#define WIN_GO_l 576
+
+
 
 enum direction {
 	NORTH = 0,

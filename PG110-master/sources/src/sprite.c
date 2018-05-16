@@ -17,6 +17,7 @@
 // Scenery elements
 #define MAP_STONE		"sprite/stone.png"
 #define MAP_TREE        "sprite/tree.png"
+#define MAP_PRINC    "sprite/bomberwoman.png"
 
 // Sprites of Banner
 #define BANNER_LINE		"sprite/banner_line.png"
@@ -75,6 +76,7 @@ SDL_Surface* door_opened;
 SDL_Surface* door_closed;
 SDL_Surface* stone;
 SDL_Surface* tree;
+SDL_Surface* woman;
 
 // bonus
 #define NB_BONUS 5
@@ -127,6 +129,7 @@ static void map_load() {
 	// Sprite loading
 	tree = load_image(MAP_TREE);
 	box = load_image(MAP_CASE);
+	woman= load_image(MAP_PRINC);
 	key = load_image(MAP_KEY);
 	stone = load_image(MAP_STONE);
 	door_opened = load_image(MAP_DOOR_OPENED);
@@ -136,6 +139,7 @@ static void map_load() {
 
 static void map_unload() {
 	SDL_FreeSurface(tree);
+	SDL_FreeSurface(woman);
 	SDL_FreeSurface(box);
 	SDL_FreeSurface(goal);
 	SDL_FreeSurface(key);
@@ -270,6 +274,11 @@ SDL_Surface* sprite_get_boom(){
 SDL_Surface* sprite_get_tree() {
 	assert(tree);
 	return tree;
+}
+
+SDL_Surface* sprite_get_princess(){
+	assert (woman);
+	return woman;
 }
 
 SDL_Surface* sprite_get_box() {

@@ -19,6 +19,7 @@ SDL_Surface* sprite_get_bombs(enum bomb_time bomb_time);
 SDL_Surface* sprite_get_boom();
 SDL_Surface* sprite_get_tree();
 SDL_Surface* sprite_get_box();
+SDL_Surface* sprite_get_princess();
 SDL_Surface* sprite_get_key();
 SDL_Surface* sprite_get_stone();
 SDL_Surface* sprite_get_door_opened();

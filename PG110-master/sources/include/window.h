@@ -8,7 +8,6 @@
 #include <SDL/SDL.h>
 
 void window_create(int width, int height);
-void window_free();
 
 void window_refresh();
 
